@@ -1,0 +1,69 @@
+Sub HighlightAndBorderBlocks()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+
+    Dim rng As Range
+    Dim cell As Range
+    Dim lastRow As Long
+    Dim currentBlockValue As Variant
+    Dim colorIndex As Integer
+    Dim startRow As Long
+
+    colorIndex = 0 ' Start with zero index for the colors array
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    Set rng = ws.Range("B2:B" & lastRow)
+
+    If rng.Cells.Count > 0 Then
+        currentBlockValue = rng.Cells(1).Value
+        startRow = 2
+    End If
+
+    Dim colors As Variant
+    colors = Array( _
+        RGB(255, 200, 200), RGB(200, 255, 200), RGB(200, 200, 255), RGB(255, 255, 200), _
+        RGB(255, 220, 220), RGB(220, 255, 220), RGB(220, 220, 255), RGB(255, 255, 220), _
+        RGB(200, 255, 255), RGB(255, 200, 255), RGB(255, 255, 200), RGB(204, 153, 255) _
+    )
+
+    For Each cell In rng.Cells
+        ' Check for block change
+        If cell.Value <> currentBlockValue Or cell.Row = lastRow Then
+            ' Apply border to the previous block
+            If startRow <= cell.Row - 1 Then
+                With ws.Range(ws.Cells(startRow, 1), ws.Cells(cell.Row - 1, ws.Columns.Count))
+                    .Borders(xlEdgeTop).LineStyle = xlContinuous
+                    .Borders(xlEdgeBottom).LineStyle = xlContinuous
+                    .Borders(xlEdgeLeft).LineStyle = xlContinuous
+                    .Borders(xlEdgeRight).LineStyle = xlContinuous
+                    .Borders(xlEdgeTop).Weight = xlMedium
+                    .Borders(xlEdgeBottom).Weight = xlMedium
+                    .Borders(xlEdgeLeft).Weight = xlMedium
+                    .Borders(xlEdgeRight).Weight = xlMedium
+                End With
+            End If
+
+            ' Update block value and start row for the next block
+            currentBlockValue = cell.Value
+            startRow = cell.Row
+
+            ' Increment color index for the new block
+            colorIndex = (colorIndex + 1) Mod (UBound(colors) + 1)
+        End If
+
+        ' Apply color to the entire row based on the color index
+        ws.Rows(cell.Row).Interior.Color = colors(colorIndex)
+    Next cell
+
+    ' Apply border to the last block
+    With ws.Range(ws.Cells(startRow, 1), ws.Cells(lastRow, ws.Columns.Count))
+        .Borders(xlEdgeTop).LineStyle = xlContinuous
+        .Borders(xlEdgeBottom).LineStyle = xlContinuous
+        .Borders(xlEdgeLeft).LineStyle = xlContinuous
+        .Borders(xlEdgeRight).LineStyle = xlContinuous
+        .Borders(xlEdgeTop).Weight = xlMedium
+        .Borders(xlEdgeBottom).Weight = xlMedium
+        .Borders(xlEdgeLeft).Weight = xlMedium
+        .Borders(xlEdgeRight).Weight = xlMedium
+    End With
+End Sub
+
